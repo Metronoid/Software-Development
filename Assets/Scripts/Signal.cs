@@ -1,19 +1,44 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using uPLibrary.Networking.M2Mqtt.Messages;
+using uPLibrary.Networking.M2Mqtt;
 
 public class Signal : MonoBehaviour
 {
-    public enum State { Red, Orange, Green, Out };
-    public State currentState;
+    public string group = "2";
+    public string type = "motor_vehicle";
+    public string component = "light";
+    public string id = "0";
+
+    private enum State { Red, Orange, Green, Out };
+    private State currentState;
     Renderer rend;
     TCar subscriber;
-    public State setState;
+    private State setState;
+    public MQTT MQTT;
+    private string subTopic;
+    private MqttClient client;
 
-    void Awake()
+    private void Awake()
+    {
+        client = MQTT.getClient();
+    }
+
+    void Start()
     {
         rend = GetComponent<Renderer>();
         EnterState(State.Red);
+
+        subTopic = MQTT.team + "/" + type + "/" + group + "/" + component + "/" + id;
+        client.Subscribe(new string[] { subTopic }, MQTT.qosLevels);
+
+        client.MqttMsgPublishReceived += signal_MqttMsgPublishReceived;
+    }
+
+    private void OnTriggerEnter(Collider collider)
+    {
+        subscriber = collider.GetComponent<TCar>();
     }
 
     private void EnterState(State state)
@@ -26,9 +51,12 @@ public class Signal : MonoBehaviour
         rend.material.SetColor("_Color", color);
     }
 
-    public void Subscribe(TCar subscriber)
+    void signal_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
     {
-        this.subscriber = subscriber;
+        string msg = System.Text.Encoding.UTF8.GetString(e.Message);
+        if (msg == "2") setState = State.Green;
+        if (msg == "1") setState = State.Orange;
+        if (msg == "0") setState = State.Red;
     }
 
     // Update is called once per frame

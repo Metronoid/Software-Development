@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using BansheeGz.BGSpline.Curve;
 
 public class SpawnPoint : MonoBehaviour
 {
@@ -12,11 +13,13 @@ public class SpawnPoint : MonoBehaviour
 
     private Vector3 Position;
     private float timeLeft;
-    public bool spawn = true;
+    private bool spawn = true;
+
+    public BGCurve[] routes;
 
     void Start()
     {
-        Position = this.transform.position;
+        Position = transform.position;
         timeLeft = Random.Range(minTime, maxTime);
     }
 
@@ -31,6 +34,9 @@ public class SpawnPoint : MonoBehaviour
         timeLeft -= Time.deltaTime;
         if (timeLeft < 0 && spawn)
         {
+            var carComponent = Car.GetComponent<Car>();
+            int index = Random.Range(0, routes.Length);
+            carComponent.route = routes[index];
             Instantiate(Car, Position, transform.rotation);
             timeLeft = Random.Range(minTime, maxTime);
             spawn = false;

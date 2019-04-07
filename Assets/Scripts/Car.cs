@@ -1,16 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using BansheeGz.BGSpline.Curve;
+using BansheeGz.BGSpline.Components;
 
 public class Car : TCar
 {
     public float speed = 5;
-    RaycastHit hit;
+    public float turnSpeed = 5;
+    public float marge = 1;
+    public BGCurve route;
+
+    public float distance = 0;
+    public BGCcMath math;
+
+    private RaycastHit hit;
     private bool pause = false;
+
+    private void Awake()
+    {
+        math = route.GetComponent<BGCcMath>();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
@@ -18,8 +32,11 @@ public class Car : TCar
     {
         if (speed > 0)
         {
-            transform.Translate(speed * Vector3.forward * Time.deltaTime);
-            // Does the ray intersect any objects excluding the player layer
+            distance += speed * Time.deltaTime;
+            Vector3 tangent;
+            Vector3 position = math.CalcPositionAndTangentByDistance(distance, out tangent);
+            transform.rotation = Quaternion.LookRotation(tangent);
+            transform.position = position;
         }
 
         int layerMask = 1 << 2;

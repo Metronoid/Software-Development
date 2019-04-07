@@ -1,18 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using uPLibrary.Networking.M2Mqtt.Messages;
+using uPLibrary.Networking.M2Mqtt;
 
 public class Sensor : MonoBehaviour
 {
+    public string group = "2";
+    public string type = "motor_vehicle";
+    public string component = "sensor";
     public string id = "0";
-    public Signal signal;
+
     public MQTT MQTT;
+    private MqttClient client;
+
+    private string subTopic;
+
+    private void Awake()
+    {
+        client = MQTT.getClient();
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        MQTT.client.MqttMsgPublishReceived += sensor_MqttMsgPublishReceived;
+        subTopic = MQTT.team + "/" + type + "/" + group + "/" + component + "/" + id;
+        client.Subscribe(new string[] { subTopic }, MQTT.qosLevels);
     }
 
     // Update is called once per frame
@@ -21,17 +33,18 @@ public class Sensor : MonoBehaviour
         
     }
 
-    private void OnTriggerEnter(Collider collider)
+    private void Publish(string message)
     {
-        signal.Subscribe(collider.gameObject.GetComponent<TCar>());
-        MQTT.Publish("7/motor_vehicle/1/sensor/1", id);
+        MQTT.Publish(client, subTopic, message);
     }
 
-    void sensor_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+    private void OnTriggerEnter(Collider collider)
     {
-        string msg = System.Text.Encoding.UTF8.GetString(e.Message);
-        if (msg == "2") signal.setState = Signal.State.Green;
-        if (msg == "1") signal.setState = Signal.State.Orange;
-        if (msg == "0") signal.setState = Signal.State.Red;
+        Publish("1");
+    }
+
+    private void OnTriggerExit(Collider collider)
+    {
+        Publish("0");
     }
 }
