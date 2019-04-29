@@ -15,14 +15,10 @@ public class Sensor : MonoBehaviour
 
     private string subTopic;
 
-    private void Awake()
-    {
-        client = MQTT.getClient();
-    }
-
     // Start is called before the first frame update
     void Start()
     {
+        client = MQTT.client;
         subTopic = MQTT.team + "/" + type + "/" + group + "/" + component + "/" + id;
         client.Subscribe(new string[] { subTopic }, MQTT.qosLevels);
     }
@@ -35,7 +31,7 @@ public class Sensor : MonoBehaviour
 
     private void Publish(string message)
     {
-        MQTT.Publish(client, subTopic, message);
+        MQTT.Publish(subTopic, message);
     }
 
     private void OnTriggerEnter(Collider collider)

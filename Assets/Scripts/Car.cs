@@ -7,6 +7,7 @@ using BansheeGz.BGSpline.Components;
 public class Car : TCar
 {
     public float speed = 5;
+    private float startingSpeed;
     public float turnSpeed = 5;
     public float marge = 1;
     public BGCurve route;
@@ -20,6 +21,7 @@ public class Car : TCar
     private void Awake()
     {
         math = route.GetComponent<BGCcMath>();
+        startingSpeed = speed;
     }
 
     // Start is called before the first frame update
@@ -74,6 +76,6 @@ public class Car : TCar
 
     public override void Drive()
     {
-        speed = 5;
+        speed = startingSpeed;
     }
 }

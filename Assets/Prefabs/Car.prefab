@@ -112,11 +112,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5768976b823901b47b3e11a39ccaad92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 10
   turnSpeed: 1
   marge: 1
   route: {fileID: 0}
-  point: 0
+  distance: 0
   math: {fileID: 0}
 --- !u!54 &4489741996055904424
 Rigidbody:

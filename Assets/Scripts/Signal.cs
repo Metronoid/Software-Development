@@ -14,7 +14,7 @@ public class Signal : MonoBehaviour
     private enum State { Red, Orange, Green, Out };
     private State currentState;
     Renderer rend;
-    TCar subscriber;
+    public TCar subscriber;
     private State setState;
     public MQTT MQTT;
     private string subTopic;
@@ -22,11 +22,12 @@ public class Signal : MonoBehaviour
 
     private void Awake()
     {
-        client = MQTT.getClient();
+        
     }
 
     void Start()
     {
+        client = MQTT.client;
         rend = GetComponent<Renderer>();
         EnterState(State.Red);
 
@@ -41,22 +42,35 @@ public class Signal : MonoBehaviour
         subscriber = collider.GetComponent<TCar>();
     }
 
+    private void OnTriggerExit(Collider collider)
+    {
+        if(collider.GetComponent<TCar>() == subscriber)
+        subscriber = null;
+    }
+
     private void EnterState(State state)
     {
         Color color = Color.white;
         currentState = state;
         if (currentState == State.Red) color = Color.red;
         if (currentState == State.Orange) color = new Color(255,165,0);
-        if (currentState == State.Green) color = Color.green;
+        if (currentState == State.Green)
+        {
+            color = Color.green;
+        }
         rend.material.SetColor("_Color", color);
     }
 
     void signal_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
     {
-        string msg = System.Text.Encoding.UTF8.GetString(e.Message);
-        if (msg == "2") setState = State.Green;
-        if (msg == "1") setState = State.Orange;
-        if (msg == "0") setState = State.Red;
+        if (e.Topic == subTopic)
+        {
+            string msg = System.Text.Encoding.UTF8.GetString(e.Message);
+            print(msg);
+            if (msg == "2") setState = State.Green;
+            if (msg == "1") setState = State.Orange;
+            if (msg == "0") setState = State.Red;
+        }
     }
 
     // Update is called once per frame
@@ -65,8 +79,11 @@ public class Signal : MonoBehaviour
         if (subscriber)
         {
             if (currentState == State.Red) subscriber.Stop();
-            if (currentState == State.Orange) subscriber.Stop();
-            if (currentState == State.Green) subscriber.Drive();
+            if (currentState == State.Green || currentState == State.Orange)
+            {
+                subscriber.Drive();
+                subscriber = null;
+            }
         }
         if (setState != State.Out)
         {

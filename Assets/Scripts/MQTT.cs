@@ -15,6 +15,12 @@ public class MQTT : MonoBehaviour
     public int brokerPort = 8883;
     public byte[] qosLevels = { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, };
     public string team = "7";
+    public MqttClient client;
+
+    public void Awake()
+    {
+        client = getClient();
+    }
 
     public static bool ValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
     {
@@ -27,7 +33,7 @@ public class MQTT : MonoBehaviour
         Debug.Log("Received message from " + e.Topic + " : " + msg);
     }
 
-    public void Publish(MqttClient client, string _topic, string msg)
+    public void Publish(string _topic, string msg)
     {
         client.Publish(
             _topic, Encoding.UTF8.GetBytes(msg),
