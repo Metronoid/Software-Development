@@ -9,11 +9,13 @@ public class Sensor : MonoBehaviour
     public string type = "motor_vehicle";
     public string component = "sensor";
     public string id = "0";
+    public bool bridge = false;
 
     public MQTT MQTT;
     private MqttClient client;
 
     private string subTopic;
+    private string bridgeTopic;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +23,11 @@ public class Sensor : MonoBehaviour
         client = MQTT.client;
         subTopic = MQTT.team + "/" + type + "/" + group + "/" + component + "/" + id;
         client.Subscribe(new string[] { subTopic }, MQTT.qosLevels);
+
+        if (bridge)
+        {
+            bridgeTopic = MQTT.team + "/vessel/3/" + component + "/1";
+        }
     }
 
     // Update is called once per frame
@@ -29,18 +36,28 @@ public class Sensor : MonoBehaviour
         
     }
 
-    private void Publish(string message)
+    private void Publish(string topic, string message)
     {
-        MQTT.Publish(subTopic, message);
+        MQTT.Publish(topic, message);
     }
 
     private void OnTriggerEnter(Collider collider)
     {
-        Publish("1");
+        if (bridge && collider.gameObject.tag == "Boat")
+        {
+            MQTT.Publish(bridgeTopic, "1");
+            return;
+        }
+        MQTT.Publish(subTopic, "1");
     }
 
     private void OnTriggerExit(Collider collider)
     {
-        Publish("0");
+        if (bridge && collider.gameObject.tag == "Boat")
+        {
+            MQTT.Publish(bridgeTopic, "0");
+            return;
+        }
+        MQTT.Publish(subTopic, "0");
     }
 }

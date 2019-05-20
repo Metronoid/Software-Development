@@ -14,6 +14,7 @@ public class Car : TCar
 
     public float distance = 0;
     public BGCcMath math;
+    public bool boat = false;
 
     private RaycastHit hit;
     private bool pause = false;
@@ -46,6 +47,13 @@ public class Car : TCar
 
         if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, 3, layerMask))
         {
+            if (boat)
+            {
+                if(hit.collider.gameObject.tag != "Boat")
+                {
+                    return;
+                }
+            }
             Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.forward) * hit.distance, Color.yellow);
             Stop();
             pause = true;
